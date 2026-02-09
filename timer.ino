@@ -33,7 +33,7 @@ void LogoutTimerFunc() {
     GameTimer.deleteTimer(gameTimerId);
     BlinkTimer.deleteTimer(blinkTimerId);
     EngineStop();
-    ActivateFunc();
+    gameFSM.executeCommand("A");
     logoutTimerCnt = 0;
   }
 }

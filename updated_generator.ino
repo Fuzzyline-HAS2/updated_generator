@@ -9,7 +9,9 @@
    *
    */
 
+#include "GameFSM.h"
 #include "generator.h"
+
 
 void setup() {
   Serial.begin(115200);
