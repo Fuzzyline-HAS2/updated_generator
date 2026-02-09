@@ -69,3 +69,25 @@
 2.  **로그인 (`Activate`)**: 플레이어가 RFID 카드를 태그합니다.
 3.  **발전 (`Starter`)**: 핸들을 마구 돌려 게이지를 채웁니다.
 4.  **완료 (`Finish`)**: 게이지가 다 차면 발전기가 가동되고 다음 단계로 넘어갑니다.
+
+---
+
+## 📊 상태 다이어그램 (State Diagram)
+
+게임의 주요 상태 변화는 다음과 같습니다. (모든 상태는 명령어로 강제 전환 가능)
+
+```mermaid
+stateDiagram-v2
+    [*] --> Setting
+    Setting --> Ready : 명령어 R
+    Ready --> Activate : 명령어 A / RFID 태그
+    Activate --> Activate : 명령어 battery_max (배터리 체크)
+    Activate --> Starter_Finish : 명령어 starter_finish / 발전 완료
+    Starter_Finish --> Repaired : 명령어 repaired
+    Repaired --> Repaired_All : 명령어 repaired_all
+    Repaired_All --> [*]
+```
+
+## 🧪 테스트 방법
+자세한 테스트 절차는 [EXECUTION_PLAN.md](EXECUTION_PLAN.md) 문서를 참고하세요.
+
