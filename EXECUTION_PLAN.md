@@ -46,9 +46,47 @@ ESP32 보드만 PC에 연결된 상태에서도 시리얼 통신을 통해 게�
 4.  **발전 완료**: 게이지를 끝까지 채우면 자동으로 초록색 LED(`Starter Finish`)로 바뀌어야 합니다.
 5.  **수리 완료**: 게임 시나리오에 따라 파란색 LED(`Repaired`)가 켜지고 모터가 힘차게 돌아야 합니다.
 
+
 ---
 
-## 3. 문제 해결 (Troubleshooting)
+## 4. 서버 통신 및 데이터 검증 (Server & Data Verification)
+
+ESP32가 서버와 데이터를 잘 주고받고 있는지 확인하는 방법입니다.
+
+### 📡 시리얼 로그 해석
+시리얼 모니터(`115200` baud)에 출력되는 로그를 통해 통신 상태를 파악할 수 있습니다.
+
+#### 1. RFID 태그 인식 및 서버 요청
+카드를 태그하면 다음과 같은 로그가 나타납니다.
+```text
+TAG DETECTED            <-- 태그가 하드웨어적으로 인식됨
+Tag User: GxPx          <-- 태그된 카드의 ID (예: G1P1)
+Player Tagged           <-- 서버로부터 역할을 받아옴 (Player/Tagger/Ghost)
+```
+*   **성공**: `Tag User: ...` 뒤에 문자가 깨지지 않고 나오고, `Player Tagged` 등이 출력되면 통신 성공.
+*   **실패**: 아무 반응이 없거나 `PN532 FAIL` 메시지가 뜨면 하드웨어 연결 확인 필요.
+
+#### 2. 배터리 충전 및 상태 업데이트
+배터리 충전 시 다음과 같은 로그가 발생합니다.
+```text
+BatteryPackCharge Executing...
+Charging...
+```
+*   이때 내부적으로 `has2wifi.Send(...)` 함수가 호출되어 서버로 `battery_pack` 수치를 전송합니다.
+*   서버 데이터가 변경되면 `Wifi.ino`의 `DataChanged()` 함수가 호출되며, 관련 상태 로그가 찍힐 수 있습니다.
+
+#### 3. 상태 변경 명령 수신
+서버(또는 웹)에서 게임 상태를 변경하면 `Wifi.ino`가 이를 감지하고 FSM에 명령을 내립니다.
+```text
+FSM Command: S          <-- 'setting' 상태 수신
+STATE: SETTING          <-- FSM이 SETTING 상태로 전환됨
+```
+*   웹 페이지나 관리자 도구에서 상태를 바꿨을 때 위 로그가 찍히는지 확인하세요.
+
+---
+
+## 5. 문제 해결 (Troubleshooting)
+
 
 *   **컴파일 오류**: 라이브러리가 모두 설치되었는지 확인하세요 (`Adafruit NeoPixel`, `Adafruit PN532` 등).
 *   **시리얼 반응 없음**: Baud Rate가 `115200`인지 확인하세요.
