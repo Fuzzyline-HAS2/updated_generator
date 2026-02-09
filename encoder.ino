@@ -1,31 +1,33 @@
-void EncoderInit()
-{
-    Serial.println("ENCODER INIT");
-    pinMode(encoderPinA, INPUT);
-    pinMode(encoderPinB, INPUT);
-    // pinMode(buttonPin, INPUT_PULLUP);
-    
-    digitalWrite(encoderPinA, HIGH); // turn pullup resistor on
-    digitalWrite(encoderPinB, HIGH); // turn pullup resistor on
-    
-    // call updateEncoder() when any high/low changed seen
-    // on interrupt 0 (pin 2), or interrupt 1 (pin 3)
-    // attachInterrupt(encoderPinA, updateEncoder, CHANGE);
-    // attachInterrupt(encoderPinB, updateEncoder, CHANGE);
+void EncoderInit() {
+  Serial.println("ENCODER INIT");
+  pinMode(encoderPinA, INPUT);
+  pinMode(encoderPinB, INPUT);
+  // pinMode(buttonPin, INPUT_PULLUP);
+
+  digitalWrite(encoderPinA, HIGH); // turn pullup resistor on
+  digitalWrite(encoderPinB, HIGH); // turn pullup resistor on
 }
-void updateEncoder()
-{
-    logoutTimerCnt = 0;
-    gameTimerCnt = 0;
+// FSM State Table
+// Index: (OldState << 2) | NewState
+// Value: 1 (Valid Transition), 0 (Invalid/No Change)
+// This table treats both CW and CCW rotations as incrementing the counter.
+const int8_t encoder_states[] = {0, 1, 1, 0, 1, 0, 0, 1,
+                                 1, 0, 0, 1, 0, 1, 1, 0};
 
-    int MSB = digitalRead(encoderPinA); // MSB = most significant bit
-    int LSB = digitalRead(encoderPinB); // LSB = least significant bit
-    
-    int encoded = (MSB << 1) | LSB;         // converting the 2 pin value to single number
-    int sum = (lastEncoded << 2) | encoded; // adding it to the previous encoded value
-    
-    if (sum == 0b1101 || sum == 0b0100 || sum == 0b0010 || sum == 0b1011) encoderValue++;
-    if (sum == 0b1110 || sum == 0b0111 || sum == 0b0001 || sum == 0b1000) encoderValue++;
-    lastEncoded = encoded; // store this value for next time
+void updateEncoder() {
+  logoutTimerCnt = 0;
+  gameTimerCnt = 0;
 
+  int MSB = digitalRead(encoderPinA); // MSB = most significant bit
+  int LSB = digitalRead(encoderPinB); // LSB = least significant bit
+
+  int encoded = (MSB << 1) | LSB; // converting the 2 pin value to single number
+  int stateIdx = (lastEncoded << 2) | encoded; // Combine old and new state
+
+  // Update encoderValue based on state table
+  if (encoder_states[stateIdx]) {
+    encoderValue++;
+  }
+
+  lastEncoded = encoded; // store this value for next time
 }

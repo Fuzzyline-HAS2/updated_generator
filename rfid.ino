@@ -42,7 +42,7 @@ void RfidLoopMain() {
 void CheckingPlayers(uint8_t rfidData[32]) // 어떤 카드가 들어왔는지 확인용
 {
   String tagUser = "";
-  logoutTimerCnt = 0; // 로그아웃 타이머 카운트 리셋
+  logoutTimerCnt = 0;         // 로그아웃 타이머 카운트 리셋
   for (int i = 0; i < 4; i++) // GxPx 데이터만 배열에서 추출해서 string으로 저장
     tagUser += (char)rfidData[i];
   Serial.println("tag_user_data : " +
@@ -145,7 +145,7 @@ void BatteryPackCharge() {
     }
   } else if ((int)my["battery_pack"] ==
              (int)my["max_battery_pack"]) { //'태그하여 충전완료'페이지 에서
-                                            //태그하면 스타터로 넘기는 부분
+                                            // 태그하면 스타터로 넘기는 부분
     BatteryFinish();
   } else if ((int)my["battery_pack"] > (int)my["max_battery_pack"]) {
     Serial.println("ERROR: Battery OverCharged!");

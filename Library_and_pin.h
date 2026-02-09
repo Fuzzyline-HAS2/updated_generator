@@ -3,11 +3,11 @@
 
 #include <Arduino.h>
 
-#include <Adafruit_PN532.h>
 #include <Adafruit_NeoPixel.h>
+#include <Adafruit_PN532.h>
 
-#include <Nextion.h>
 #include <HAS2_Wifi.h>
+#include <Nextion.h>
 #include <SimpleTimer.h>
 
 #define NEXTIONHWSERIAL_RX_PIN 39
@@ -23,16 +23,16 @@
 #define INNER_NEOPIXEL_PIN 27
 #define CIRCUIT_NEOPIXEL_PIN 14
 
-#define MOTOR_INA1_PIN  32
-#define MOTOR_INA2_PIN  4
-#define MOTOR_PWMA_PIN  22
+#define MOTOR_INA1_PIN 32
+#define MOTOR_INA2_PIN 4
+#define MOTOR_PWMA_PIN 22
 
-#define RELAY_PIN  14
+#define RELAY_PIN 14
 
-#define BOXSWITCH_PIN  36
+#define BOXSWITCH_PIN 36
 
 #define encoderPinA 13
 #define encoderPinB 15
-#define buttonPin   34
+#define buttonPin 34
 
 #endif

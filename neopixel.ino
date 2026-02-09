@@ -1,37 +1,49 @@
+#include "generator.h"
+#include <Adafruit_NeoPixel.h>
+
+// Helper to get uint32_t color from global color array
+uint32_t GetColor(int colorIdx) {
+  return pixels[0].Color(color[colorIdx][0], color[colorIdx][1],
+                         color[colorIdx][2]);
+}
+
 void NeopixelInit() {
+  uint32_t white = GetColor(WHITE);
   for (int i = 0; i < NeopixelNum; ++i) {
     pixels[i].begin();
-  }
-  for (int i = 0; i < NeopixelNum; ++i) {
-    for (int j = 0; j < pixels[i].numPixels(); j++) {
-      pixels[i].setPixelColor(
-          j,
-          pixels[i].Color(color[WHITE][0], color[WHITE][1], color[WHITE][2]));
-    }
+    pixels[i].fill(white);
     pixels[i].show();
   }
 }
 
 void EncoderNeopixelOn(int neoNum) {
-  for (int i = 0; i < neoNum; i++)
-    pixels[GAUGE].setPixelColor(
-        i, pixels[GAUGE].Color(color[BLUE][0], color[BLUE][1], color[BLUE][2]));
-  for (int i = neoNum; i < NumPixels[GAUGE]; i++)
-    pixels[GAUGE].setPixelColor(
-        i,
-        pixels[GAUGE].Color(color[GREEN][0], color[GREEN][1], color[GREEN][2]));
+  uint32_t blue = GetColor(BLUE);
+  uint32_t green = GetColor(GREEN);
+
+  pixels[GAUGE].fill(blue, 0, neoNum);
+  pixels[GAUGE].fill(green, neoNum); // Fills from neoNum to end
   pixels[GAUGE].show();
 }
+
 void NeoBlink(int neo, int neoColor, int cnt, int blinkTime) {
-  for (int i = 0; i < cnt; i++) {          // 0.5*10=5초동안 점멸
-    lightColor(pixels[neo], color[BLACK]); // 전체 off
+  uint32_t targetColor = GetColor(neoColor);
+  uint32_t black = GetColor(BLACK);
+
+  for (int i = 0; i < cnt; i++) {
+    pixels[neo].fill(black);
+    pixels[neo].show();
     delay(blinkTime);
-    lightColor(pixels[neo], color[neoColor]); // 전체 적색on
-    delay(blinkTime);                         // 전체 적색on
+
+    pixels[neo].fill(targetColor);
+    pixels[neo].show();
+    delay(blinkTime);
   }
 }
 
 void AllNeoOn(int neoColor) {
-  for (int i = 0; i < NeopixelNum; ++i)
-    lightColor(pixels[i], color[neoColor]);
+  uint32_t targetColor = GetColor(neoColor);
+  for (int i = 0; i < NeopixelNum; ++i) {
+    pixels[i].fill(targetColor);
+    pixels[i].show();
+  }
 }

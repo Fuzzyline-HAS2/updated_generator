@@ -5,7 +5,7 @@
 const int rfid_num = 1; // 설치된 pn532의 개수
 
 //****************************************WIFI****************************************************************
-HAS2_Wifi has2wifi("http://172.30.1.44");
+HAS2_Wifi has2wifi("http://172.30.1.43");
 void DataChanged();
 void SettingFunc(void);
 void ActivateFunc(void);
@@ -66,10 +66,11 @@ void PageSend();
 void NeopixelInit();
 void EncoderNeopixelOn();
 void NeoBlink(int neo, int neoColor, int cnt, int blinkTime);
+// Helper function implementation (restored to header to avoid Arduino prototype
+// issues)
 void lightColor(Adafruit_NeoPixel &p, int *c) {
-  for (int i = 0; i < p.numPixels(); i++) {
-    p.setPixelColor(i, p.Color(c[0], c[1], c[2]));
-  }
+  uint32_t colorVal = p.Color(c[0], c[1], c[2]);
+  p.fill(colorVal);
   p.show();
 }
 const int NumPixels[4] = {28, 4, 16, 10};

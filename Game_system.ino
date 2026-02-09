@@ -23,3 +23,6 @@ void StarterActivate() {
     BlinkTimerStart(CIRCUIT, YELLOW);
   }
 }
+
+// 시나리오가 아니라 FSM으로 구성
+// 현재 게임 시스템은 
