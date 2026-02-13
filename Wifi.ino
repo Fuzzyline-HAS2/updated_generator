@@ -1,6 +1,6 @@
 // Main command handler for Wifi Data
 void DataChanged() {
-  static StaticJsonDocument<500> cur;
+  static StaticJsonDocument<1000> cur;
 
   // Game State Changes
   if ((String)(const char *)my["game_state"] !=
