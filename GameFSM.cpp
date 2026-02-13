@@ -210,14 +210,22 @@ const char *GameFSM::eventTypeName(FsmEventType type) const {
 }
 
 void GameFSM::logState(const char *prefix) const {
+#if FSM_DEBUG
   Serial.printf("[FSM] %s state=%s tag=%d lever=%u session=%lu\r\n", prefix,
                 getStateName(ctx.current_state).c_str(), ctx.tag_present ? 1 : 0,
                 ctx.lever_count, (unsigned long)ctx.session_id);
+#else
+  (void)prefix;
+#endif
 }
 
 void GameFSM::logEvent(FsmEventType type) const {
+#if FSM_DEBUG
   Serial.printf("[FSM EVENT] %s (state=%s)\r\n", eventTypeName(type),
                 getStateName(ctx.current_state).c_str());
+#else
+  (void)type;
+#endif
 }
 
 void GameFSM::processEventQueue() {
@@ -287,9 +295,12 @@ void GameFSM::processEventQueue() {
 }
 
 void GameFSM::executeCommand(String command) {
+#if FSM_DEBUG
   Serial.printf("[FSM CMD] %s (state=%s)\r\n", command.c_str(),
                 getStateName(ctx.current_state).c_str());
+#endif
   if (command == "watchdog") {
+    Serial.println("[FSM CMD] watchdog -> ESP.restart()");
     ESP.restart();
     return;
   }

@@ -16,17 +16,25 @@ void setup() {
   Serial.begin(115200);
 
   NeopixelInit();
+  delay(100);
   RfidInit();
+  delay(100);
   MotorInit();
+  delay(100);
   EncoderInit();
+  delay(100);
   NextionInit();
+  delay(100);
   TimerInit();
+  delay(100);
   // has2wifi.Setup("KT_GiGA_6C64","ed46zx1198");
   has2wifi.Setup("badland_ruins", "Code3824@");
+  delay(100);
   //    has2wifi.Setup("city");
   DataChanged();
 }
 void loop() {
   gameFSM.performStateLogic();
   TimerRun();
+  delay(1);
 }

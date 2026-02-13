@@ -3,6 +3,10 @@
 
 #include "Arduino.h"
 
+#ifndef FSM_DEBUG
+#define FSM_DEBUG 0
+#endif
+
 enum GameState {
   STATE_BOOT,
   STATE_SETTING,
