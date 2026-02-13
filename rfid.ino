@@ -12,24 +12,35 @@ void CheckingPlayers(uint8_t rfidData[32]);
 void ResetLogoutTimer();
 
 void RfidInit() {
-RestartPn532:
-  nfc[MAINPN532].begin();
+  const uint8_t kMaxInitRetry = 5;
+  rfid_init_complete[MAINPN532] = false;
 
-  uint32_t versiondata = nfc[MAINPN532].getFirmwareVersion();
-  if (!versiondata) {
-    Serial.println("PN532 FAIL : MAINPN532");
+  for (uint8_t attempt = 1; attempt <= kMaxInitRetry; ++attempt) {
+    nfc[MAINPN532].begin();
+    uint32_t versiondata = nfc[MAINPN532].getFirmwareVersion();
+    if (versiondata) {
+      nfc[MAINPN532].SAMConfig();
+      Serial.println("PN532 SUCC : MAINPN532");
+      rfid_init_complete[MAINPN532] = true;
+      delay(CHECK_DELAY);
+      return;
+    }
+
+    Serial.printf("PN532 FAIL : MAINPN532 (attempt %u/%u)\r\n", attempt,
+                  kMaxInitRetry);
     AllNeoOn(RED);
-    delay(1000);
-    goto RestartPn532;
+    delay(200);
+    yield();
   }
 
-  nfc[MAINPN532].SAMConfig();
-  Serial.println("PN532 SUCC : MAINPN532");
-  rfid_init_complete[MAINPN532] = true;
-  delay(CHECK_DELAY);
+  Serial.println("PN532 INIT SKIPPED: continue boot without RFID");
 }
 
 void RfidLoopMain() {
+  if (!rfid_init_complete[MAINPN532]) {
+    return;
+  }
+
   uint8_t data[TAG_DATA_SIZE];
   static bool tagDetected = false;
   static unsigned long lastDetectMs = 0;
