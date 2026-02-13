@@ -70,6 +70,9 @@ private:
   void processTimeoutGame();
   void processNetCmd(const char *command);
   void handlePlayerTag();
+  const char *eventTypeName(FsmEventType type) const;
+  void logEvent(FsmEventType type) const;
+  void logState(const char *prefix) const;
 
   void enterState(GameState state);
   void exitState(GameState state);

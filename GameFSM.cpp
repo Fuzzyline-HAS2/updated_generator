@@ -190,6 +190,36 @@ void GameFSM::handlePlayerTag() {
   }
 }
 
+const char *GameFSM::eventTypeName(FsmEventType type) const {
+  switch (type) {
+  case EVT_NET_CMD:
+    return "EVT_NET_CMD";
+  case EVT_TAG_ON:
+    return "EVT_TAG_ON";
+  case EVT_TAG_OFF:
+    return "EVT_TAG_OFF";
+  case EVT_LEVER_STEP:
+    return "EVT_LEVER_STEP";
+  case EVT_TIMEOUT_LOGOUT:
+    return "EVT_TIMEOUT_LOGOUT";
+  case EVT_TIMEOUT_GAME:
+    return "EVT_TIMEOUT_GAME";
+  default:
+    return "EVT_UNKNOWN";
+  }
+}
+
+void GameFSM::logState(const char *prefix) const {
+  Serial.printf("[FSM] %s state=%s tag=%d lever=%u session=%lu\r\n", prefix,
+                getStateName(ctx.current_state).c_str(), ctx.tag_present ? 1 : 0,
+                ctx.lever_count, (unsigned long)ctx.session_id);
+}
+
+void GameFSM::logEvent(FsmEventType type) const {
+  Serial.printf("[FSM EVENT] %s (state=%s)\r\n", eventTypeName(type),
+                getStateName(ctx.current_state).c_str());
+}
+
 void GameFSM::processEventQueue() {
   bool hasTagOff = false;
   bool hasTagOn = false;
@@ -205,6 +235,7 @@ void GameFSM::processEventQueue() {
     FsmEvent event = eventQueue[eventHead];
     eventHead = (eventHead + 1) % kEventQueueSize;
     eventCount--;
+    logEvent(event.type);
 
     switch (event.type) {
     case EVT_TAG_OFF:
@@ -256,6 +287,8 @@ void GameFSM::processEventQueue() {
 }
 
 void GameFSM::executeCommand(String command) {
+  Serial.printf("[FSM CMD] %s (state=%s)\r\n", command.c_str(),
+                getStateName(ctx.current_state).c_str());
   if (command == "watchdog") {
     ESP.restart();
     return;
@@ -300,11 +333,14 @@ void GameFSM::executeCommand(String command) {
   }
 
   if (nextState != ctx.current_state) {
+    logState("before_transition");
     exitState(ctx.current_state);
     ctx.current_state = nextState;
     enterState(ctx.current_state);
+    logState("after_transition");
   } else {
     enterState(ctx.current_state);
+    logState("reenter_state");
   }
 }
 
