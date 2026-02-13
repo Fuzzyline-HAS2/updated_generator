@@ -541,7 +541,7 @@ uint16_t GameFSM::getLeverCount() { return ctx.lever_count; }
 
 uint32_t GameFSM::getSessionId() { return ctx.session_id; }
 
-String GameFSM::getStateName(GameState state) {
+String GameFSM::getStateName(GameState state) const {
   switch (state) {
   case STATE_BOOT:
     return "boot";

@@ -106,7 +106,7 @@ public:
   bool isTagPresent();
   uint16_t getLeverCount();
   uint32_t getSessionId();
-  String getStateName(GameState state);
+  String getStateName(GameState state) const;
 };
 
 extern GameFSM gameFSM;
