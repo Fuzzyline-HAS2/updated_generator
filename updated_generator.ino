@@ -12,9 +12,9 @@
 #include "GameFSM.h"
 #include "generator.h"
 
-
 void setup() {
   Serial.begin(115200);
+
   NeopixelInit();
   RfidInit();
   MotorInit();
@@ -27,6 +27,6 @@ void setup() {
   DataChanged();
 }
 void loop() {
-  ptrCurrentMode();
+  gameFSM.performStateLogic();
   TimerRun();
 }

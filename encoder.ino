@@ -26,7 +26,7 @@ void updateEncoder() {
 
   // Update encoderValue based on state table
   if (encoder_states[stateIdx]) {
-    encoderValue++;
+    gameFSM.notifyLeverStepFromISR();
   }
 
   lastEncoded = encoded; // store this value for next time

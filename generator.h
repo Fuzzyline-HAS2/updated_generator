@@ -14,8 +14,6 @@ void DataChanged();
 #include "GameFSM.h" // Include the new FSM header
 extern bool receiveMineOn;
 
-extern void (*ptrCurrentMode)(); // 현재모드 저장용 포인터 함수
-extern void (*ptrRfidMode)();    // rfid모드 저장용 포인터 함수
 
 void WaitFunc();
 void StarterActivate(); // Keep this as it is used as a loop function
@@ -108,8 +106,6 @@ extern bool rfid_timer_assess;
 extern bool rfid_init_complete[rfid_num];
 void RfidInit(void);
 void RfidLoopMain(void); // Renamed/Added from RfidLoop
-void LoginGenerator();
-void StartFinish();
 void WaitFunc(); // Ensure this is declared
 
 //****************************************MOTOR

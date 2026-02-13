@@ -13,11 +13,11 @@ void DataChanged() {
     // "activate".
 
     if (cmd == "setting")
-      gameFSM.executeCommand("S");
+      gameFSM.enqueueNetCmd("S");
     else if (cmd == "ready")
-      gameFSM.executeCommand("R");
+      gameFSM.enqueueNetCmd("R");
     else if (cmd == "activate")
-      gameFSM.executeCommand("A");
+      gameFSM.enqueueNetCmd("A");
   }
 
   // Left Generator Logic (Separate from FSM or part of it? Keeping as is for
@@ -39,7 +39,7 @@ void DataChanged() {
       // were in original code but I didn't add them to FSM plan explicitly. I
       // should check if I missed them in FSM.
 
-      gameFSM.executeCommand(stateCmd);
+      gameFSM.enqueueNetCmd(stateCmd);
     }
   } else {
     receiveMineOn = false;

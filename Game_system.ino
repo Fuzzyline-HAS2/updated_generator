@@ -10,9 +10,4 @@ void StarterActivate() {
   // Serial.println(gaugeNeoCnt);
   EncoderNeopixelOn(gaugeNeoCnt);
   EngineSpeeed(gaugeNeoCnt * 8);
-
-  if (gaugeNeoCnt >= NumPixels[GAUGE]) {
-    // Transition handled by FSM command now
-    gameFSM.executeCommand("starter_finish");
-  }
 }

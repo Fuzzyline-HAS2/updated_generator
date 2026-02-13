@@ -8,8 +8,6 @@ HAS2_Wifi has2wifi("http://172.30.1.43");
 //****************************************Game
 // System****************************************************************
 bool receiveMineOn = false; // Added missing definition
-void (*ptrCurrentMode)();   // 현재모드 저장용 포인터 함수
-void (*ptrRfidMode)();      // rfid모드 저장용 포인터 함수
 const unsigned long starterNeoDivider = 15000 * 7.5;
 bool blinkOn = false;
 

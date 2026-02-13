@@ -11,19 +11,7 @@ void TimerInit() {
 
 void WifiIntervalFunc() { has2wifi.Loop(DataChanged); }
 
-void GameTimerFunc() {
-  gameTimerCnt++;
-  // Serial.println("gameTimerCnt:" + (String)gameTimerCnt);
-  if (gameTimerCnt == 5) { // 0.5s x 6 =3sec
-    encoderValue = encoderValue -
-                   (starterNeoDivider * 0.01); // 초마다 전체량에서 1프로씩 감소
-    gameTimerCnt = 3;
-    if (encoderValue < 0) {
-      encoderValue = 0;
-      gameTimerCnt = 0;
-    }
-  }
-}
+void GameTimerFunc() { gameFSM.enqueueTimeoutGame(); }
 void LogoutTimerFunc() {
   logoutTimerCnt++;
   // Serial.println("LogoutTimerCnt:" + (String)logoutTimerCnt);
@@ -33,8 +21,7 @@ void LogoutTimerFunc() {
     GameTimer.deleteTimer(gameTimerId);
     BlinkTimer.deleteTimer(blinkTimerId);
     EngineStop();
-    gameFSM.executeCommand("A");
-    logoutTimerCnt = 0;
+    gameFSM.enqueueTimeoutLogout();
   }
 }
 

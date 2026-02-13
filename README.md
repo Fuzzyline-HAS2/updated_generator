@@ -1,93 +1,85 @@
-# 🎮 발전기 게임 시스템 (Generator Game System)
+# HAS Generator Game System (ESP32)
 
-이 프로젝트는 **ESP32**를 기반으로 한 방탈출 게임용 발전기 장치입니다.  
-사용자가 열심히 핸들을 돌려(엔코더 회전) 전력을 공급하고, RFID 카드를 태그하여 발전기를 가동시키는 시뮬레이션 게임입니다.
+이 프로젝트는 ESP32 기반 발전기 게임 장치입니다.  
+RFID 태그, 엔코더(레버), 네오픽셀, Nextion, WiFi를 사용해 게임 상태를 제어합니다.
 
----
+## 프로젝트 핵심
+- 게임 상태 관리는 `GameFSM`에서 담당합니다.
+- 입력(RFID, 타이머, WiFi, 엔코더 ISR)은 FSM 이벤트로 전달됩니다.
+- 상태 전이는 이벤트 큐를 통해 직렬 처리됩니다.
 
-## 🛠 하드웨어 구성 (Hardware)
+## 하드웨어 구성
+- ESP32 Dev Module
+- PN532 RFID (SPI)
+- Nextion HMI (UART)
+- WS2812B Neopixel
+- Rotary Encoder
+- DC Motor
 
-이 코드는 다음 하드웨어 장치들과 연결되어 동작합니다.
+## 코드 구조
+- `updated_generator.ino`: `setup()/loop()` 엔트리 포인트
+- `GameFSM.h`, `GameFSM.cpp`: 상태 머신, 이벤트 타입, 상태 전이/액션
+- `rfid.ino`: 태그 감지 및 FSM 이벤트 발행
+- `encoder.ino`: 엔코더 ISR 처리, 레버 스텝 이벤트 알림
+- `timer.ino`: 주기/타임아웃 이벤트 발행
+- `Wifi.ino`: 서버 데이터 변경을 FSM 명령 이벤트로 변환
+- `nextion.ino`: 디스플레이 관련 입출력
+- `neopixel.ino`: LED 제어
+- `motor.ino`: 모터 제어
+- `GlobalVariables.cpp`, `generator.h`: 전역 리소스/선언
 
-1.  **메인 컨트롤러**: ESP32 개발 보드 (NodeMCU-32S 등)
-2.  **RFID 리더**: PN532 (NFC/RFID 모듈, SPI 통신)
-3.  **디스플레이**: Nextion HMI LCD (시리얼 통신)
-4.  **LED**: Neopixel (WS2812B) 스트립 (게이지, 상태 표시용)
-5.  **입력 장치**: 로터리 엔코더 (발전기 핸들 회전 감지)
-6.  **출력 장치**: DC 모터 (진동/회전 피드백)
+## FSM 이벤트 모델
+현재 FSM에서 사용하는 주요 이벤트 타입:
+- `EVT_NET_CMD`
+- `EVT_TAG_ON`
+- `EVT_TAG_OFF`
+- `EVT_LEVER_STEP`
+- `EVT_TIMEOUT_LOGOUT`
+- `EVT_TIMEOUT_GAME`
 
----
+우선순위 처리:
+1. `TAG_OFF`
+2. `TAG_ON`
+3. `TIMEOUT_*`
+4. `NET_CMD`
+5. `LEVER_STEP`
 
-## 📂 소프트웨어 구조 (Software Structure)
+## 주요 상태
+- `STATE_SETTING`
+- `STATE_READY`
+- `STATE_ACTIVATE`
+- `STATE_BATTERY_MAX`
+- `STATE_STARTER_FINISH`
+- `STATE_REPAIRED`
+- `STATE_REPAIRED_ALL`
 
-코드는 기능별로 여러 파일로 나뉘어 있습니다. (`.ino` 파일들)
+## 동작 흐름(요약)
+1. 초기화 후 `STATE_SETTING` 또는 서버 상태를 따라 전이
+2. 플레이어 태그 인식 시 `player_tag` 이벤트 처리
+3. 배터리 최대 시 `STATE_BATTERY_MAX`로 진입, 스타터 모드 시작
+4. 레버 누적값 임계치 도달 시 `starter_finish` 전이
+5. 이후 태그/서버 이벤트에 따라 `repaired`, `repaired_all`로 진행
 
-| 파일명 | 역할 & 설명 |
-| :--- | :--- |
-| **`GameFSM.cpp`** | **핵심 두뇌**. 게임의 상태(준비, 활성, 완료 등)를 관리합니다. |
-| **`encoder.ino`** | 핸들을 얼마나 돌렸는지 감지합니다. |
-| **`neopixel.ino`** | LED 불빛을 제어합니다. (게이지, 깜빡임 등) |
-| **`rfid.ino`** | 카드를 댔을 때 누구의 카드인지 인식합니다. |
-| **`Wifi.ino`** | 중앙 서버와 통신하여 게임 시작/종료 신호를 주고받습니다. |
-| **`Nextion.ino`** | LCD 화면에 그림을 띄우거나 터치를 입력받습니다. |
-| **`timer.ino`** | 시간 제한이나 주기적인 작업(LED 깜빡임)을 담당합니다. |
+## 빌드/업로드
+1. Arduino IDE 또는 PlatformIO에서 프로젝트 열기
+2. 보드: `ESP32 Dev Module`
+3. 필요한 라이브러리 설치
+- `Adafruit NeoPixel`
+- `Adafruit PN532`
+- `ArduinoJson`
+- `SimpleTimer` (또는 호환 타이머 라이브러리)
+4. 엔트리 파일 `updated_generator.ino` 기준으로 빌드/업로드
 
----
+## 빠른 확인 포인트
+- 메인 루프는 `gameFSM.performStateLogic()` + `TimerRun()` 순서로 동작
+- 외부에서 FSM 상태를 직접 바꾸지 않고 이벤트 API를 사용
+- 엔코더 ISR은 `notifyLeverStepFromISR()`만 호출
 
-## 🚀 사용 방법 (How to Use)
+## 문서
+- 리팩토링 계획: `docs/FSM_REFACTOR_PLAN.md`
+- 변경 이력: `docs/FSM_REFACTOR_CHANGELOG.md`
+- 코드 리뷰: `docs/FSM_CODE_REVIEW.md`
 
-### 1. 설치 및 업로드
-1.  **Arduino IDE**를 설치합니다.
-2.  이 프로젝트 폴더를 엽니다. (`updated_generator.ino` 실행)
-3.  **라이브러리 매니저**에서 다음 라이브러리를 설치합니다:
-    *   `Adafruit NeoPixel`
-    *   `Adafruit PN532`
-    *   `ArduinoJson`
-    *   `SimpleTimer` (또는 유사한 타이머 라이브러리)
-4.  보드를 **ESP32 Dev Module**로 선택하고 업로드합니다.
-
-### 2. 시리얼 명령어 (Serial Commands)
-시리얼 모니터(115200bps)를 열고 다음 명령어를 입력하여 장치를 테스트할 수 있습니다.
-
-| 명령어 | 동작 | 설명 |
-| :--- | :--- | :--- |
-| **`S`** | **Setting** | 초기 설정 모드 (흰색 LED) |
-| **`R`** | **Ready** | 게임 준비 모드 (빨간색 LED, 태그 대기) |
-| **`A`** | **Activate** | 게임 활성화 (노란색 LED, 로그인 대기) |
-| **`watchdog`** | **Reset** | 장치를 강제로 재부팅합니다. |
-| **`check`** | **Status** | 현재 상태를 확인합니다. |
-| **`mbm`** | **Battery Max** | 배터리가 가득 찬 상태로 강제 변경 |
-| **`msf`** | **Starter Finish** | 스타터 가동 완료 상태로 강제 변경 |
-| **`mr`** | **Repaired** | 수리 완료 상태로 강제 변경 |
-| **`mra`** | **Repaired All** | 전체 수리 완료(탈출) 상태로 강제 변경 |
-
----
-
-## ⚙️ 동작 흐름 (Game Flow)
-
-1.  **대기 (`Setting`/`Ready`)**: 플레이어가 오기를 기다립니다.
-2.  **로그인 (`Activate`)**: 플레이어가 RFID 카드를 태그합니다.
-3.  **발전 (`Starter`)**: 핸들을 마구 돌려 게이지를 채웁니다.
-4.  **완료 (`Finish`)**: 게이지가 다 차면 발전기가 가동되고 다음 단계로 넘어갑니다.
-
----
-
-## 📊 상태 다이어그램 (State Diagram)
-
-게임의 주요 상태 변화는 다음과 같습니다. (모든 상태는 명령어로 강제 전환 가능)
-
-```mermaid
-stateDiagram-v2
-    [*] --> Setting
-    Setting --> Ready : 명령어 R
-    Ready --> Activate : 명령어 A / RFID 태그
-    Activate --> Activate : 명령어 battery_max (배터리 체크)
-    Activate --> Starter_Finish : 명령어 starter_finish / 발전 완료
-    Starter_Finish --> Repaired : 명령어 repaired
-    Repaired --> Repaired_All : 명령어 repaired_all
-    Repaired_All --> [*]
-```
-
-## 🧪 테스트 방법
-자세한 테스트 절차는 [EXECUTION_PLAN.md](EXECUTION_PLAN.md) 문서를 참고하세요.
-
+## 참고
+- 기존 문서/주석 중 일부는 인코딩 이슈가 있을 수 있습니다.
+- 현재 구조 기준 설명은 이 README와 `docs/FSM_REFACTOR_CHANGELOG.md`를 우선 참고하세요.
