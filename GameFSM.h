@@ -54,11 +54,14 @@ private:
   uint8_t eventCount;
   volatile uint16_t pendingLeverStepsFromIsr;
   uint8_t gameTickPhase;
+  bool encoderIsrAttached;
 
   bool isStarterMode() const;
   uint16_t getLeverThreshold() const;
   void resetStarterGauge();
   void runStarterModeLoop();
+  void attachEncoderInterrupts();
+  void detachEncoderInterrupts();
 
   void processTagOn();
   void processTagOff();

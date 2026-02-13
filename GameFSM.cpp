@@ -15,6 +15,7 @@ GameFSM::GameFSM() {
   eventCount = 0;
   pendingLeverStepsFromIsr = 0;
   gameTickPhase = 0;
+  encoderIsrAttached = false;
 }
 
 void GameFSM::begin() {}
@@ -363,6 +364,26 @@ void GameFSM::runStarterModeLoop() {
   EngineSpeeed(gaugeNeoCnt * 8);
 }
 
+void GameFSM::attachEncoderInterrupts() {
+  if (encoderIsrAttached) {
+    return;
+  }
+
+  attachInterrupt(encoderPinA, updateEncoder, CHANGE);
+  attachInterrupt(encoderPinB, updateEncoder, CHANGE);
+  encoderIsrAttached = true;
+}
+
+void GameFSM::detachEncoderInterrupts() {
+  if (!encoderIsrAttached) {
+    return;
+  }
+
+  detachInterrupt(encoderPinA);
+  detachInterrupt(encoderPinB);
+  encoderIsrAttached = false;
+}
+
 void GameFSM::onSetting() {
   runtimeMode = MODE_IDLE;
   resetStarterGauge();
@@ -373,8 +394,7 @@ void GameFSM::onSetting() {
   AllNeoOn(WHITE);
   EngineStop();
 
-  detachInterrupt(encoderPinA);
-  detachInterrupt(encoderPinB);
+  detachEncoderInterrupts();
 
   GameTimer.deleteTimer(gameTimerId);
   LogoutTimer.deleteTimer(logoutTimerId);
@@ -390,8 +410,7 @@ void GameFSM::onReady() {
   SendCmd("page pgPreTagger");
   LeftGenerator();
 
-  detachInterrupt(encoderPinA);
-  detachInterrupt(encoderPinB);
+  detachEncoderInterrupts();
 
   GameTimer.deleteTimer(gameTimerId);
   LogoutTimer.deleteTimer(logoutTimerId);
@@ -406,8 +425,7 @@ void GameFSM::onActivate() {
   SendCmd("page pgLocked");
   LeftGenerator();
 
-  detachInterrupt(encoderPinA);
-  detachInterrupt(encoderPinB);
+  detachEncoderInterrupts();
 
   GameTimer.deleteTimer(gameTimerId);
   LogoutTimer.deleteTimer(logoutTimerId);
@@ -436,14 +454,12 @@ void GameFSM::onBatteryMax() {
   gameTimerId = GameTimer.setInterval(gameTime, GameTimerFunc);
   BlinkTimerStart(STARTER, YELLOW);
 
-  attachInterrupt(encoderPinA, updateEncoder, CHANGE);
-  attachInterrupt(encoderPinB, updateEncoder, CHANGE);
+  attachEncoderInterrupts();
 }
 
 void GameFSM::onStarterFinish() {
   runtimeMode = MODE_IDLE;
-  detachInterrupt(encoderPinA);
-  detachInterrupt(encoderPinB);
+  detachEncoderInterrupts();
 
   SendCmd("page pgStarterDone");
 

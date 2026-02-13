@@ -29,7 +29,7 @@
 
 #define RELAY_PIN 14
 
-#define BOXSWITCH_PIN 36
+#define BOXSWITCH_PIN 21
 
 #define encoderPinA 13
 #define encoderPinB 15
